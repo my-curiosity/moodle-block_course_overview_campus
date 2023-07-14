@@ -492,7 +492,12 @@ class block_course_overview_campus extends block_base {
                     if (count($teacherroles) > 0) {
 
                         // Get all user name fields for SQL query in a proper way.
-                        $allnames = get_all_user_name_fields(true, 'u');
+
+                        // Emulate deprecated get_all_user_name_fields(true, 'u') function with Fields API
+                        $allnames = \core_user\fields::get_name_fields();
+                        $allnames = substr_replace($allnames, 'u.', 0, 0);
+                        $allnames = join(',', $allnames);
+
                         $teacherfields = 'ra.id AS raid, u.id, '.$allnames.', r.sortorder'; // Moodle would complain about two columns called id with a "Did you remember to make the first column something unique in your call to get_records? Duplicate value 'xxx' found in column 'id'." debug message. That's why we alias one column to a name different than id.
                         $teachersortfields = 'u.lastname, u.firstname';
 
@@ -1228,11 +1233,11 @@ class block_course_overview_campus extends block_base {
                     // Create meta info code.
                     // Hide metainfo on phones if configured.
                     if ($coc_config->secondrowhideonphones == true) {
-                        $metainfo = '<br /><span class="coc-metainfo hidden-phone hidden-sm-down">('.implode($meta, '  |  ').')</span>'; // Class 'hidden-phone' is used for Bootstrapbase and will be ignored by Boost.
+                        $metainfo = '<br /><span class="coc-metainfo hidden-phone hidden-sm-down">('.implode('|', $meta).')</span>'; // Class 'hidden-phone' is used for Bootstrapbase and will be ignored by Boost.
                     }
                     // Otherwise.
                     else {
-                        $metainfo = '<br /><span class="coc-metainfo">('.implode($meta, '  |  ').')</span>';
+                        $metainfo = '<br /><span class="coc-metainfo">('.implode('|', $meta).')</span>';
                     }
                 }
                 else {
